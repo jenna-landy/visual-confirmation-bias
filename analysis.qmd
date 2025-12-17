@@ -1,0 +1,243 @@
+---
+title: "vcb_analysis"
+format: html
+editor: source
+---
+
+```{r}
+library(dplyr)
+library(tidyverse)
+library(magrittr)
+
+df_study1 <- read.csv("pilot1_cleaned.csv")
+df_study2 <- read.csv("pilot2_cleaned.csv")
+
+df_study2_filtered <- df_study2 %>% dplyr::filter(manipulation_condition_word!="Control")
+```
+
+```{r}
+#which study are we looking at?
+df <- df_study2
+
+sd(df_study2$alignment_search)
+```
+
+ANALYSES
+
+```{r}
+#path b2
+summary(lm(post_evidence_guilt_belief ~ alignment_search * manipulation_condition +
+             pre_evidence_guilt_belief, df))
+
+ggplot(df, 
+       aes(x = alignment_search, y = post_evidence_guilt_belief, color = manipulation_condition_word)) +
+  geom_point() + 
+  geom_smooth(method = "lm")
+```
+
+```{r}
+#path b1
+summary(lm(alignment_search ~ manipulation_condition * pre_evidence_guilt_belief, df))
+
+ggplot(df, 
+       aes(x = pre_evidence_guilt_belief, y = alignment_search, color = manipulation_condition_word)) +
+  geom_point() + 
+  geom_smooth(method = "lm")
+```
+
+```{r}
+#path a
+
+model1 <- lm(pre_evidence_guilt_belief ~ 
+             manipulation_condition * system_justification_GMC + 
+             right_wing_authoritarianism_GMC + 
+             #need_for_cognition_GMC +
+             social_dominance_orientation_GMC + 
+             political_orientation, 
+           df)
+
+summary(model1)
+
+ggplot(df, 
+       aes(x = system_justification_GMC, y = pre_evidence_guilt_belief, color = manipulation_condition_word)) +
+  geom_point() + 
+  geom_smooth(method = "lm")
+
+
+
+model2 <- lm(pre_evidence_guilt_belief ~ 
+             manipulation_condition * 
+             (system_justification_GMC + 
+             right_wing_authoritarianism_GMC + 
+             #need_for_cognition_GMC +
+             social_dominance_orientation_GMC) + 
+             political_orientation, 
+           df)
+
+summary(model2)
+
+BIC(model1, model2)
+
+#model1 breakdown for study 2
+df$manipulation_condition_f <- as.factor(df$manipulation_condition)
+df$manipulation_condition_f <- relevel(df$manipulation_condition_f, ref = "0.5") # "-0.5" ; "0" ; "0.5"
+
+model1 <- lm(pre_evidence_guilt_belief ~ 
+             manipulation_condition_f * system_justification_GMC + 
+             right_wing_authoritarianism_GMC + 
+             #need_for_cognition_GMC +
+             social_dominance_orientation_GMC + 
+             political_orientation, 
+           df)
+
+summary(model1)
+
+```
+
+```{r}
+#full model: study 1
+library(lavaan)
+
+#X1: manipulation_condition
+#X2: system_justification_GMC
+
+#M1: pre_evidence_guilt_belief
+
+#M2: alignment_search
+
+#Y1: post_evidence_similarity
+#Y2: post_evidence_match (STUDY 1 ONLY)
+#Y3: post_evidence_guilt_belief (STUDY 1 ONLY)
+
+#covar1: right_wing_authoritarianism_GMC
+#covar2: social_dominance_orientation_GMC
+#covar3: political_orientation
+#covar4: need_for_cognition_GMC (STUDY 1 ONLY)
+
+model <- '
+  # --- Regressions ---
+  pre_evidence_guilt_belief ~ a1*manipulation_condition + a2*system_justification_GMC +
+                              right_wing_authoritarianism_GMC + social_dominance_orientation_GMC +
+                              political_orientation + need_for_cognition_GMC +
+                              manipulation_condition:system_justification_GMC
+
+  alignment_search ~ d*pre_evidence_guilt_belief + manipulation_condition +
+                     manipulation_condition:pre_evidence_guilt_belief
+
+  post_evidence_similarity ~ b1*alignment_search + c1*manipulation_condition +
+                             pre_evidence_guilt_belief + alignment_search:manipulation_condition +
+                             right_wing_authoritarianism_GMC + social_dominance_orientation_GMC +
+                             political_orientation + need_for_cognition_GMC
+
+  post_evidence_match ~ b2*alignment_search + c2*manipulation_condition +
+                        pre_evidence_guilt_belief + alignment_search:manipulation_condition +
+                        right_wing_authoritarianism_GMC + social_dominance_orientation_GMC +
+                        political_orientation + need_for_cognition_GMC
+
+  post_evidence_guilt_belief ~ b3*alignment_search + c3*manipulation_condition +
+                               pre_evidence_guilt_belief + alignment_search:manipulation_condition +
+                               right_wing_authoritarianism_GMC + social_dominance_orientation_GMC +
+                               political_orientation + need_for_cognition_GMC
+
+  # --- Covariate correlations ---
+  system_justification_GMC ~~ right_wing_authoritarianism_GMC + social_dominance_orientation_GMC +
+                              political_orientation + need_for_cognition_GMC
+  right_wing_authoritarianism_GMC ~~ social_dominance_orientation_GMC + political_orientation + need_for_cognition_GMC
+  social_dominance_orientation_GMC ~~ political_orientation + need_for_cognition_GMC
+  political_orientation ~~ need_for_cognition_GMC
+
+  # --- Indirect effects ---
+  ind_X1_Y1 := a1 * d * b1
+  ind_X1_Y2 := a1 * d * b2
+  ind_X1_Y3 := a1 * d * b3
+  ind_X2_Y1 := a2 * d * b1
+  ind_X2_Y2 := a2 * d * b2
+  ind_X2_Y3 := a2 * d * b3
+'
+
+
+```
+
+```{r}
+#full model: study 2
+library(lavaan)
+
+#X1: manipulation_condition
+#X2: system_justification_GMC
+
+#M1: pre_evidence_guilt_belief
+
+#M2: alignment_search
+
+#Y1: post_evidence_similarity
+
+#covar1: right_wing_authoritarianism_GMC
+#covar2: social_dominance_orientation_GMC
+#covar3: political_orientation
+
+df$manipulation_condition_f <- relevel(df$manipulation_condition_f, ref = "0")
+
+model <- '
+  # --- Regressions ---
+  pre_evidence_guilt_belief ~ a1*manipulation_condition + a2*system_justification_GMC +
+                              right_wing_authoritarianism_GMC + 
+                              social_dominance_orientation_GMC +
+                              political_orientation +
+                              manipulation_condition:system_justification_GMC
+
+  alignment_search ~ d*pre_evidence_guilt_belief + manipulation_condition +
+                     manipulation_condition:pre_evidence_guilt_belief
+
+  post_evidence_guilt_belief ~ b1*alignment_search + c1*manipulation_condition +
+                               pre_evidence_guilt_belief +
+                               alignment_search:manipulation_condition +
+                               right_wing_authoritarianism_GMC + 
+                               social_dominance_orientation_GMC +
+                               political_orientation
+
+  # --- Covariate correlations ---
+  system_justification_GMC ~~ right_wing_authoritarianism_GMC + 
+                              social_dominance_orientation_GMC +
+                              political_orientation
+  right_wing_authoritarianism_GMC ~~ social_dominance_orientation_GMC + 
+                                    political_orientation
+  social_dominance_orientation_GMC ~~ political_orientation
+
+  # --- Indirect effects ---
+  ind_X1_Y := a1 * d * b1
+  ind_X2_Y := a2 * d * b1
+'
+
+```
+
+```{r}
+fit <- sem(model, data = df, se = "bootstrap", bootstrap = 5000)
+summary(fit, standardized = TRUE, rsquare = TRUE)
+```
+
+```{r}
+#study 1: PROCESS
+process(data = df_study1,
+        y = "post_evidence_guilt_belief", #"post_evidence_similarity" ; "post_evidence_match" ; "post_evidence_guilt_belief"
+        x = "system_justification_GMC",
+        m = c("pre_evidence_guilt_belief", "alignment_search"),
+        cov = c("manipulation_condition",
+                "right_wing_authoritarianism_GMC",
+                "social_dominance_orientation_GMC",
+                "need_for_cognition_GMC",
+                "political_orientation"),
+        model = 6)
+```
+
+```{r}
+#study 2: PROCESS
+process(data = df_study2,
+        y = "post_evidence_guilt_belief",
+        x = "system_justification_GMC",
+        m = c("pre_evidence_guilt_belief", "alignment_search"),
+        cov = c("manipulation_condition",
+                "right_wing_authoritarianism_GMC",
+                "social_dominance_orientation_GMC",
+                "political_orientation"),
+        model = 6)
+```
