@@ -8,6 +8,7 @@ editor: source
 library(dplyr)
 library(tidyverse)
 library(magrittr)
+library(lavaan)
 
 df_study1 <- read.csv("pilot1_cleaned.csv")
 df_study2 <- read.csv("pilot2_cleaned.csv")
@@ -18,45 +19,68 @@ df_study2_filtered <- df_study2 %>% dplyr::filter(manipulation_condition_word!="
 ```{r}
 #which study are we looking at?
 df <- df_study2
-
-sd(df_study2$alignment_search)
 ```
 
 ANALYSES
 
 ```{r}
-#path b2
-summary(lm(post_evidence_guilt_belief ~ alignment_search * manipulation_condition +
-             pre_evidence_guilt_belief, df))
+#path c: total effect (don't report this directly - just a quick decontextualized way to isolate the path)
+model_total <- lm(post_evidence_guilt_belief ~ 
+             manipulation_condition + system_justification_GMC, 
+           df)
+
+summary(model_total)
+confint(model_total)
+df.residual(model_total)
+```
+
+```{r}
+#path b2 (don't report this directly - just a quick decontextualized way to isolate the path)
+model <- lm(post_evidence_guilt_belief ~ 
+              alignment_search + 
+              alignment_search:manipulation_condition +
+              pre_evidence_guilt_belief +
+              system_justification_GMC + manipulation_condition
+              , df)
+
+summary(model)
+confint(model)
+df.residual(model)
 
 ggplot(df, 
-       aes(x = alignment_search, y = post_evidence_guilt_belief, color = manipulation_condition_word)) +
+       aes(x = alignment_search, y = post_evidence_guilt_belief)) +
   geom_point() + 
   geom_smooth(method = "lm")
 ```
 
 ```{r}
-#path b1
-summary(lm(alignment_search ~ manipulation_condition * pre_evidence_guilt_belief, df))
+#path b1 (don't report this directly - just a quick decontextualized way to isolate the path)
+model <- lm(alignment_search ~ pre_evidence_guilt_belief + 
+              pre_evidence_guilt_belief:manipulation_condition, df)
+
+summary(model)
+confint(model)
+df.residual(model)
 
 ggplot(df, 
-       aes(x = pre_evidence_guilt_belief, y = alignment_search, color = manipulation_condition_word)) +
+       aes(x = pre_evidence_guilt_belief, y = alignment_search)) +
   geom_point() + 
   geom_smooth(method = "lm")
 ```
 
 ```{r}
-#path a
-
+#path a (don't report this directly except aic/bic - just a quick decontextualized way to isolate the path)
 model1 <- lm(pre_evidence_guilt_belief ~ 
              manipulation_condition * system_justification_GMC + 
              right_wing_authoritarianism_GMC + 
-             #need_for_cognition_GMC +
+             #need_for_cognition_GMC + #comment out for df_study2
              social_dominance_orientation_GMC + 
              political_orientation, 
            df)
 
 summary(model1)
+confint(model1)
+df.residual(model1)
 
 ggplot(df, 
        aes(x = system_justification_GMC, y = pre_evidence_guilt_belief, color = manipulation_condition_word)) +
@@ -69,34 +93,39 @@ model2 <- lm(pre_evidence_guilt_belief ~
              manipulation_condition * 
              (system_justification_GMC + 
              right_wing_authoritarianism_GMC + 
-             #need_for_cognition_GMC +
+             #need_for_cognition_GMC + #comment out for df_study2
              social_dominance_orientation_GMC) + 
              political_orientation, 
            df)
 
 summary(model2)
+confint(model2)
+df.residual(model2)
 
+AIC(model1, model2)
 BIC(model1, model2)
 
 #model1 breakdown for study 2
 df$manipulation_condition_f <- as.factor(df$manipulation_condition)
-df$manipulation_condition_f <- relevel(df$manipulation_condition_f, ref = "0.5") # "-0.5" ; "0" ; "0.5"
+df$manipulation_condition_f <- relevel(df$manipulation_condition_f, ref = "-0.5") # "-0.5" ; "0" ; "0.5"
 
 model1 <- lm(pre_evidence_guilt_belief ~ 
              manipulation_condition_f * system_justification_GMC + 
              right_wing_authoritarianism_GMC + 
-             #need_for_cognition_GMC +
+             #need_for_cognition_GMC + #always commented out as this model is only for df_study2
              social_dominance_orientation_GMC + 
              political_orientation, 
            df)
 
 summary(model1)
+confint(model1)
+df.residual(model1)
 
 ```
 
 ```{r}
 #full model: study 1
-library(lavaan)
+set.seed(18936)
 
 #X1: manipulation_condition
 #X2: system_justification_GMC
@@ -121,38 +150,36 @@ model <- '
                               political_orientation + need_for_cognition_GMC +
                               manipulation_condition:system_justification_GMC
 
-  alignment_search ~ d*pre_evidence_guilt_belief + manipulation_condition +
+  alignment_search ~ b*pre_evidence_guilt_belief +
                      manipulation_condition:pre_evidence_guilt_belief
 
-  post_evidence_similarity ~ b1*alignment_search + c1*manipulation_condition +
-                             pre_evidence_guilt_belief + alignment_search:manipulation_condition +
-                             right_wing_authoritarianism_GMC + social_dominance_orientation_GMC +
-                             political_orientation + need_for_cognition_GMC
+  post_evidence_similarity ~ c1*alignment_search + d1*pre_evidence_guilt_belief +
+                              alignment_search:manipulation_condition +
+                              eprime1*manipulation_condition + fprime1*system_justification_GMC
 
-  post_evidence_match ~ b2*alignment_search + c2*manipulation_condition +
-                        pre_evidence_guilt_belief + alignment_search:manipulation_condition +
-                        right_wing_authoritarianism_GMC + social_dominance_orientation_GMC +
-                        political_orientation + need_for_cognition_GMC
+  post_evidence_match ~ c2*alignment_search + d2*pre_evidence_guilt_belief +
+                              alignment_search:manipulation_condition +
+                              eprime2*manipulation_condition + fprime2*system_justification_GMC
 
-  post_evidence_guilt_belief ~ b3*alignment_search + c3*manipulation_condition +
-                               pre_evidence_guilt_belief + alignment_search:manipulation_condition +
-                               right_wing_authoritarianism_GMC + social_dominance_orientation_GMC +
-                               political_orientation + need_for_cognition_GMC
+  post_evidence_guilt_belief ~ c3*alignment_search + d3*pre_evidence_guilt_belief +
+                              alignment_search:manipulation_condition +
+                              eprime3*manipulation_condition + fprime3*system_justification_GMC
 
   # --- Covariate correlations ---
   system_justification_GMC ~~ right_wing_authoritarianism_GMC + social_dominance_orientation_GMC +
                               political_orientation + need_for_cognition_GMC
-  right_wing_authoritarianism_GMC ~~ social_dominance_orientation_GMC + political_orientation + need_for_cognition_GMC
+  right_wing_authoritarianism_GMC ~~ social_dominance_orientation_GMC + political_orientation +
+                              need_for_cognition_GMC
   social_dominance_orientation_GMC ~~ political_orientation + need_for_cognition_GMC
   political_orientation ~~ need_for_cognition_GMC
 
   # --- Indirect effects ---
-  ind_X1_Y1 := a1 * d * b1
-  ind_X1_Y2 := a1 * d * b2
-  ind_X1_Y3 := a1 * d * b3
-  ind_X2_Y1 := a2 * d * b1
-  ind_X2_Y2 := a2 * d * b2
-  ind_X2_Y3 := a2 * d * b3
+  ind_X1_Y1 := a1 * b * c1
+  ind_X1_Y2 := a1 * b * c2
+  ind_X1_Y3 := a1 * b * c3
+  ind_X2_Y1 := a2 * b * c1
+  ind_X2_Y2 := a2 * b * c2
+  ind_X2_Y3 := a2 * b * c3
 '
 
 
@@ -160,7 +187,7 @@ model <- '
 
 ```{r}
 #full model: study 2
-library(lavaan)
+set.seed(63440)
 
 #X1: manipulation_condition
 #X2: system_justification_GMC
@@ -185,34 +212,31 @@ model <- '
                               political_orientation +
                               manipulation_condition:system_justification_GMC
 
-  alignment_search ~ d*pre_evidence_guilt_belief + manipulation_condition +
+  alignment_search ~ b*pre_evidence_guilt_belief +
                      manipulation_condition:pre_evidence_guilt_belief
 
-  post_evidence_guilt_belief ~ b1*alignment_search + c1*manipulation_condition +
-                               pre_evidence_guilt_belief +
-                               alignment_search:manipulation_condition +
-                               right_wing_authoritarianism_GMC + 
-                               social_dominance_orientation_GMC +
-                               political_orientation
+  post_evidence_guilt_belief ~ c*alignment_search + d*pre_evidence_guilt_belief +
+                      alignment_search:manipulation_condition  +
+                      eprime1*manipulation_condition + fprime1*system_justification_GMC
 
   # --- Covariate correlations ---
   system_justification_GMC ~~ right_wing_authoritarianism_GMC + 
                               social_dominance_orientation_GMC +
                               political_orientation
   right_wing_authoritarianism_GMC ~~ social_dominance_orientation_GMC + 
-                                    political_orientation
+                              political_orientation
   social_dominance_orientation_GMC ~~ political_orientation
 
   # --- Indirect effects ---
-  ind_X1_Y := a1 * d * b1
-  ind_X2_Y := a2 * d * b1
+  ind_X1_Y := a1 * b * c
+  ind_X2_Y := a2 * b * c
 '
 
 ```
 
 ```{r}
-fit <- sem(model, data = df, se = "bootstrap", bootstrap = 5000)
-summary(fit, standardized = TRUE, rsquare = TRUE)
+fit <- sem(model, data = df, se = "bootstrap", bootstrap = 10000)
+summary(fit, standardized = TRUE, rsquare = TRUE, ci = TRUE) #ci = TRUE if you want confidence intervals
 ```
 
 ```{r}
@@ -226,6 +250,7 @@ process(data = df_study1,
                 "social_dominance_orientation_GMC",
                 "need_for_cognition_GMC",
                 "political_orientation"),
+        boot = 10000,
         model = 6)
 ```
 
@@ -239,5 +264,6 @@ process(data = df_study2,
                 "right_wing_authoritarianism_GMC",
                 "social_dominance_orientation_GMC",
                 "political_orientation"),
+        boot = 10000,
         model = 6)
 ```
