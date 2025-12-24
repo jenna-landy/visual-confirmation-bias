@@ -18,7 +18,7 @@ df_study2_filtered <- df_study2 %>% dplyr::filter(manipulation_condition_word!="
 
 ```{r}
 #which study are we looking at?
-df <- df_study2
+df <- df_study1
 ```
 
 ANALYSES
@@ -86,9 +86,78 @@ ggplot(df,
        aes(x = system_justification_GMC, y = pre_evidence_guilt_belief, color = manipulation_condition_word)) +
   geom_point() + 
   geom_smooth(method = "lm")
+```
 
+```{r}
+#plot for manuscript: pilot study 1
 
+df$system_justification_uncentered = df$system_justification_GMC + 3.875988
+  
+ggplot(
+  df,
+  aes(
+    x = system_justification_uncentered,
+    y = pre_evidence_guilt_belief,
+    fill = manipulation_condition_word
+  )
+) +
+  geom_jitter(
+    height = .1,
+    shape = 21,
+    size = 3,
+    color = "black",
+    alpha = .9
+  ) +
+  geom_smooth(
+    aes(linetype = manipulation_condition_word),
+    method = "lm",
+    color = "black",
+    size = 1, #change to 2 for thicker lines
+    se = FALSE
+  ) +
+  scale_fill_manual(
+    values = c("grey20", "grey70")
+  ) +
+  theme_bw()
+```
 
+```{r}
+#plot for manuscript: pilot study 2
+
+df$system_justification_uncentered = df$system_justification_GMC + 4.894096
+
+ggplot(
+  df,
+  aes(
+    x = system_justification_uncentered,
+    y = pre_evidence_guilt_belief,
+    fill = manipulation_condition_word
+  )
+) +
+  geom_jitter(
+    height = .1,
+    shape = 21,
+    size = 3,
+    color = "black",
+    alpha = .9
+  ) +
+  geom_smooth(
+    aes(linetype = manipulation_condition_word),
+    method = "lm",
+    color = "black",
+    size = 1, #change to 2 for thicker lines
+    se = FALSE
+  ) +
+  scale_fill_manual(
+    values = c("white", "grey60", "grey20")
+  ) +
+  scale_linetype_manual(
+    values = c("dotted", "dashed", "solid")
+  ) +
+  theme_bw()
+```
+
+```{r}
 model2 <- lm(pre_evidence_guilt_belief ~ 
              manipulation_condition * 
              (system_justification_GMC + 
