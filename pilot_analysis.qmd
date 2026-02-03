@@ -18,7 +18,7 @@ df_study2_filtered <- df_study2 %>% dplyr::filter(manipulation_condition_word!="
 
 ```{r}
 #which study are we looking at?
-df <- df_study1
+df <- df_study2
 ```
 
 ANALYSES
@@ -336,3 +336,158 @@ process(data = df_study2,
         boot = 10000,
         model = 6)
 ```
+
+STUDY 3: Power simulations using Study 2 results
+
+```{r}
+df <- df_study2
+
+#main effect of interest
+ggplot(df, aes(x = alignment_search, y = post_evidence_guilt_belief)) +
+  geom_point(alpha = 0.5) +  
+  geom_smooth(method = "lm", se = TRUE, alpha = 0.1)
+
+summary(lm(post_evidence_guilt_belief ~ alignment_search, df))
+
+beta1 <- coef(lm(post_evidence_guilt_belief ~ alignment_search, df))[2]
+beta0 <- coef(lm(post_evidence_guilt_belief ~ alignment_search, df))[1]
+residual_se <- summary(lm(post_evidence_guilt_belief ~ alignment_search, df))$sigma
+
+
+#FORMULA: y = mx+b + error
+#y: post_evidence_guilt_belief
+#x: alignment_search
+#beta1 (slope): 0.942 (m)
+#beta0 (intercept): -0.070 (b)
+#residual standard error: 1.250
+```
+
+
+```{r}
+#start by making a reasonable distribution for your predictor (alignment_search) -- feed this into x
+#now treated as experimentally manipulated
+
+simulated_data <- data.frame(
+  alignment_search = runif(n = 100, min = -2, max = 2)
+)
+
+#now calculate y
+simulated_data <- simulated_data |> 
+  dplyr::mutate(
+    post_evidence_guilt_belief = 
+      0.942 * alignment_search + 
+      rnorm(n = 100, mean = 0, sd = 1.250)
+  ) |>
+  dplyr::mutate(
+    post_evidence_guilt_belief = 
+      pmax(pmin(post_evidence_guilt_belief, 3), -3)
+  )
+
+#plot and run lm to see what your simulated data looks like
+ggplot(simulated_data, aes(x = alignment_search, y = post_evidence_guilt_belief)) +
+  geom_point(alpha = 0.5) +  
+  geom_smooth(method = "lm", se = TRUE, alpha = 0.1)
+
+summary(lm(post_evidence_guilt_belief ~ alignment_search, simulated_data))
+```
+
+```{r}
+#doing the same thing again but making a function this time
+simulate_dataset <- function(x_mean, x_sd, n, beta1, beta0, residual_se){
+  
+  simulated_data <- data.frame(
+    x = runif(n = n, min = -2, max = 2)
+    )
+  
+  simulated_data <- simulated_data |> 
+    dplyr::mutate(
+      y = beta1 * x + rnorm(n = n, mean = 0, sd = residual_se)
+      ) |>
+    dplyr::mutate(
+      y = pmax(pmin(y, 3), -3)
+    )
+  
+  return(simulated_data)
+
+}
+```
+
+```{r}
+#running the function with nearly no hard-coding (except n)
+simulated_data <- simulate_dataset(mean(df$alignment_search), 
+                 sd(df$alignment_search), 
+                 100, 
+                 coef(lm(post_evidence_guilt_belief ~ alignment_search, df))[2],
+                 coef(lm(post_evidence_guilt_belief ~ alignment_search, df))[1],
+                 summary(lm(post_evidence_guilt_belief ~ alignment_search, df))$sigma)
+
+#plot and run lm to see what your simulated data looks like
+ggplot(simulated_data, aes(x = x, y = y)) +
+  geom_point(alpha = 0.5) +  
+  geom_smooth(method = "lm", se = TRUE, alpha = 0.1)
+
+summary(lm(y ~ x, simulated_data))
+```
+
+
+```{r}
+#loop over simulate_dataset() for many simulations
+
+simulate_power <- function(n_sims, x_mean, x_sd, n, beta1, beta0, residual_se){
+  
+  #create a df to hold sim results
+  coef_power <- data.frame(
+    sig_betaO = rep(NA, n_sims),
+    sig_beta1 = rep(NA, n_sims) #this is the important value
+  )
+  
+  #loop many sims and fill df
+  for(dataset_i in 1:n_sims){
+    simulated_data <- simulate_dataset(x_mean, x_sd, n, beta1, beta0, residual_se)
+    
+    model <- tidy(lm(y~x, data=simulated_data))
+    
+    coef_power$sig_betaO[dataset_i] <- model$p.value[1] < .05 #b
+    coef_power$sig_beta1[dataset_i] <- model$p.value[2] < .05 #m
+  }
+  
+  #aggregate
+  coef_power <- summarize(coef_power,
+                          beta0_power = mean(sig_betaO),
+                          beta1_power = mean(sig_beta1)
+                          )
+  
+  return(coef_power)
+  
+}
+```
+
+```{r}
+#running the function with nearly no hard-coding (except n_sims and n)
+beta_planned <- (coef(lm(post_evidence_guilt_belief ~ alignment_search, df))[2]) * .25 #assume slope 1/4 as angular
+
+simulated_power <- simulate_power(1000,
+                                  mean(df$alignment_search),
+                                  sd(df$alignment_search),
+                                  275, #turn up sample size to watch power go up
+                                  beta_planned,
+                                  coef(lm(post_evidence_guilt_belief ~ alignment_search, df))[1],
+                                  summary(lm(post_evidence_guilt_belief ~ alignment_search, df))$sigma)
+
+simulated_power
+#beta1 (m) power is more interesting to us: power for the slope
+```
+
+```{r}
+cor.test(df$alignment_search, df$post_evidence_guilt_belief) #.67
+
+pwr.r.test(
+  n = NULL,
+  r = .67/4,
+  sig.level = 0.05,
+  power = 0.8,
+  alternative = "two.sided"
+)
+```
+
+
