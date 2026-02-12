@@ -9,6 +9,8 @@ library(dplyr)
 library(tidyverse)
 library(magrittr)
 library(lavaan)
+library(broom)
+library(pwr)
 
 df_study1 <- read.csv("pilot1_cleaned.csv")
 df_study2 <- read.csv("pilot2_cleaned.csv")
