@@ -401,9 +401,9 @@ set.seed(18936)
 
 #M2: alignment_search
 
-#Y1: post_evidence_similarity
+#Y1: post_evidence_similarity (STUDY 1 ONLY)
 #Y2: post_evidence_match (STUDY 1 ONLY)
-#Y3: post_evidence_guilt_belief (STUDY 1 ONLY)
+#Y3: post_evidence_guilt_belief
 
 #covar1: right_wing_authoritarianism_GMC
 #covar2: social_dominance_orientation_GMC
@@ -495,7 +495,7 @@ set.seed(63440)
 
 #M2: alignment_search
 
-#Y1: post_evidence_similarity
+#Y1: post_evidence_guilt_belief
 
 #covar1: right_wing_authoritarianism_GMC
 #covar2: social_dominance_orientation_GMC
