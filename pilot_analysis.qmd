@@ -189,6 +189,14 @@ print_sem_table <- function(fit, digits = 3) {
 ANALYSES
 
 ```{r}
+#simple regression
+simple <- lm(post_evidence_guilt_belief ~ manipulation_condition + system_justification_GMC, df)
+#post_evidence_guilt_belief #post_evidence_match #post_evidence_similarity
+summary(simple) 
+confint(simple)
+```
+
+```{r}
 #path c: total effect (don't report this directly - just a quick decontextualized way to isolate the path)
 model_total <- lm(post_evidence_guilt_belief ~ 
                     manipulation_condition + #predictor
