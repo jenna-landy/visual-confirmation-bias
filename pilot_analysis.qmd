@@ -745,4 +745,31 @@ pwr.r.test(
 )
 ```
 
+```{r}
+#sensitivity analyses for pilot studies 1 and 2
+
+#study 1
+#controlling for 8 predictors: visual search (key predictor), prior guilt beliefs, condition, sj, 4 covariates
+#residual df: N = 253 - 8 - 1 = 244
+p1 <- pwr.f2.test(
+  u = 1, # focal predictor only
+  v = 244,
+  sig.level = 0.05,
+  power = 0.80
+)
+
+#study 2
+#controlling for 7 predictors: visual search (key predictor), prior guilt beliefs, condition, sj, 3 covariates
+#residual df: N = 315 - 7 - 1 = 307
+p2 <- pwr.f2.test(
+  u = 1, # focal predictor only
+  v = 307,
+  sig.level = 0.05,
+  power = 0.80
+)
+
+p1 #f2: .032
+p2 #f2: .025
+```
+
 
