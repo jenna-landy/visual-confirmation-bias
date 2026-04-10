@@ -20,7 +20,7 @@ df_study2_filtered <- df_study2 %>% dplyr::filter(manipulation_condition_word!="
 
 ```{r}
 #which study are we looking at?
-df <- df_study1 #df_study1, df_study2
+df <- df_study2 #df_study1, df_study2
 ```
 
 ```{r}
@@ -768,8 +768,17 @@ p2 <- pwr.f2.test(
   power = 0.80
 )
 
-p1 #f2: .032
-p2 #f2: .025
+p1
+fsquared1 <- .0321577
+
+p2
+fsquared2 <- .02553825
+
+rsquared1 <- (fsquared1)/(1+fsquared1)
+rsquared2 <- (fsquared2)/(1+fsquared2)
+
+rsquared1
+rsquared2
 ```
 
 
