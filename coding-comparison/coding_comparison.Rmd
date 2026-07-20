@@ -1,0 +1,226 @@
+---
+title: "Coding comparison"
+output: html_document
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(irr)
+library(knitr)
+```
+
+# Read Data
+
+```{r}
+official_codes <- read.csv("filename.csv", stringsAsFactors = FALSE)
+hand_or_chatgpt_codes <- read.csv("filename.csv", stringsAsFactors = FALSE)
+```
+
+# Coding Scheme
+
+```{r}
+codebook <- data.frame(
+  Code = c("0", "1", "2", "NA"),
+  Meaning = c(
+    "Similarity cited",
+    "Difference cited",
+    "Not resolvable / unclear",
+    "No response"
+  )
+)
+
+kable(
+  codebook,
+  caption = "Coding Scheme"
+)
+```
+
+# Identify Code Columns
+
+Assumes coding variables end with `_code`.
+
+```{r}
+code_cols <- intersect(
+  grep("_code$", names(official_codes), value = TRUE),
+  grep("_code$", names(hand_or_chatgpt_codes), value = TRUE)
+)
+
+code_cols
+```
+
+# Verify Same Number of Rows
+
+```{r}
+if(nrow(official_codes) != nrow(hand_or_chatgpt_codes)){
+  stop("Files contain different numbers of observations.")
+}
+```
+
+# Find All Coding Disagreements
+
+```{r}
+all_differences <- bind_rows(
+  lapply(code_cols, function(col){
+
+    text_col <- sub("_code$", "", col)
+
+    mismatch_rows <- which(
+      as.character(official_codes[[col]]) !=
+      as.character(hand_or_chatgpt_codes[[col]])
+    )
+
+    if(length(mismatch_rows) == 0) return(NULL)
+
+    data.frame(
+      row = mismatch_rows,
+      variable = col,
+      response = official_codes[[text_col]][mismatch_rows],
+      official_code = official_codes[[col]][mismatch_rows],
+      hand_or_chatgpt_code = hand_or_chatgpt_codes[[col]][mismatch_rows],
+      stringsAsFactors = FALSE
+    )
+  })
+)
+```
+
+# Total Number of Disagreements
+
+```{r}
+total_disagreements <- nrow(all_differences)
+
+cat(
+  "Total disagreements:",
+  total_disagreements,
+  "\n"
+)
+```
+
+# Percent Agreement
+
+```{r}
+total_cells <- nrow(official_codes) * length(code_cols)
+
+percent_agreement <-
+  (total_cells - total_disagreements) /
+  total_cells * 100
+
+cat(
+  "Percent agreement:",
+  round(percent_agreement, 2),
+  "%\n"
+)
+```
+
+```{r}
+# Cohen's Kappa
+
+kappa_data <- bind_rows(
+  lapply(code_cols, function(col){
+    data.frame(
+      variable = col,
+      official_code = as.character(official_codes[[col]]),
+      hand_or_chatgpt_code = as.character(hand_or_chatgpt_codes[[col]])
+    )
+  })
+)
+
+# Remove rows where either coder has missing data
+kappa_data_clean <- kappa_data %>%
+  filter(!is.na(official_code), !is.na(hand_or_chatgpt_code))
+
+# Cohen's kappa across all coded cells
+kappa_result <- kappa2(
+  kappa_data_clean[, c("official_code", "hand_or_chatgpt_code")]
+)
+
+kappa_result
+```
+
+# Disagreement Summary
+
+```{r}
+disagreement_summary <-
+  all_differences %>%
+  count(variable, sort = TRUE)
+
+kable(
+  disagreement_summary,
+  caption = "Number of Disagreements by Variable"
+)
+```
+
+```{r}
+disagreement_types <-
+  all_differences %>%
+  count(official_code, hand_or_chatgpt_code, sort = TRUE) %>%
+  mutate(
+    official_meaning = recode(
+      as.character(official_code),
+      "0" = "Similarity",
+      "1" = "Difference",
+      "2" = "Not resolvable",
+      "NA" = "No response"
+    ),
+    hand_or_chatgpt_meaning = recode(
+      as.character(hand_or_chatgpt_code),
+      "0" = "Similarity",
+      "1" = "Difference",
+      "2" = "Not resolvable",
+      "NA" = "No response"
+    )
+  )
+
+kable(
+  disagreement_types,
+  caption = "Most Common Disagreement Types"
+)
+```
+
+# Exact Disagreements
+
+```{r}
+kable(
+  all_differences,
+  caption = "Coding Disagreements with Original Response Text"
+)
+```
+
+```{r}
+# Code labels
+
+code_labels <- c(
+  "0" = "Similarity cited",
+  "1" = "Difference cited",
+  "2" = "Not resolvable / unclear",
+  "NA" = "No response"
+)
+
+#Print Every Disagreement in Sentence Form
+
+if(nrow(all_differences) > 0){
+
+  for(i in seq_len(nrow(all_differences))){
+
+    official_code <- as.character(all_differences$official_code[i])
+    hand_or_chatgpt_code <- as.character(all_differences$hand_or_chatgpt_code[i])
+
+    cat(
+      'For text: "',
+      all_differences$response[i],
+      '", the official coding schema said ',
+      official_code,
+      " (",
+      code_labels[official_code],
+      "), but the hand or chatgpt coding schema said ",
+      hand_or_chatgpt_code,
+      " (",
+      code_labels[hand_or_chatgpt_code],
+      ").\n\n",
+      sep = ""
+    )
+  }
+
+} else {
+  cat("No disagreements found.\n")
+}
+```
