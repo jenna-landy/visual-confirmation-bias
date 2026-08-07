@@ -1,0 +1,41 @@
+participant_id,condition,target_fixation_duration,total_fixation_duration,proportion_fixation,n_fixations,n_target_fixations,proportion_n,month_year,gaze_samples,hispanic,race,education,zip,gender,pre_handwriting
+1,no_popout,6417,51916,0.1236035133677479,186,18,0.0967741935483871,07/2026,88,No,White or Caucasian,"Some college, but no degree",11217,Female,"It will probably NOT be ""our guy"""
+2,popout,5836,46476,0.1255701867630605,227,26,0.1145374449339207,07/2026,89,No,Black or African American,"Some college, but no degree",11203,Male,Unsure
+3,popout,2196,47384,0.04634475772412629,224,8,0.03571428571428571,07/2026,90,No,Asian,"Some college, but no degree",11208,Male,"It will probably be ""our guy"""
+4,popout,1764,47080,0.037468139337298215,241,11,0.04564315352697095,07/2026,81,No,Black or African American,High school diploma or GED,12084,Female,Unsure
+5,no_popout,1624,45996,0.035307418036350985,205,8,0.03902439024390244,07/2026,95,No,Asian,Bachelor’s degree,11365,Male,Unsure
+6,popout,4332,46428,0.09330576376324631,209,21,0.10047846889952153,07/2026,78,No,White or Caucasian,"Some college, but no degree",11211,Female,Unsure
+7,no_popout,1868,48952,0.03815983003758784,195,8,0.041025641025641026,07/2026,92,No,Asian,Bachelor’s degree,11360,Female,Unsure
+8,no_popout,3144,48392,0.06496941643246817,199,16,0.08040201005025126,07/2026,89,No,Asian,Some high school or less,10607,Female,Unsure
+9,no_popout,5840,51008,0.11449184441656211,208,23,0.11057692307692307,07/2026,91,No,White or Caucasian,"Some college, but no degree",10583,Female,Unsure
+10,popout,6564,52228,0.1256797120318603,231,24,0.1038961038961039,07/2026,97,No,White or Caucasian,"Some college, but no degree",10009,Female,Unsure
+11,no_popout,5096,46556,0.10945957556491108,210,22,0.10476190476190476,07/2026,87,No,"White or Caucasian,Asian","Some college, but no degree",10003,Male,Unsure
+12,no_popout,1972,21976,0.08973425555151074,116,10,0.08620689655172414,07/2026,70,No,White or Caucasian,Some high school or less,10976,Male,Unsure
+13,popout,8364,45796,0.18263603808192855,207,24,0.11594202898550725,07/2026,81,No,White or Caucasian,"Some college, but no degree",10012,Male,Unsure
+14,no_popout,2576,46328,0.0556035227076498,200,13,0.065,07/2026,86,No,Black or African American,Bachelor’s degree,07666,Non-binary / third gender,"It will probably NOT be ""our guy"""
+15,popout,6832,50144,0.1362476068921506,190,16,0.08421052631578947,07/2026,82,No,White or Caucasian,"Some college, but no degree",10012,Female,"It will probably be ""our guy"""
+16,no_popout,3792,48488,0.07820491668041578,172,12,0.06976744186046512,07/2026,88,No,White or Caucasian,"Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS etc.)",10014,Female,Unsure
+17,no_popout,5772,49164,0.11740297778862582,201,22,0.10945273631840796,07/2026,93,Yes,"Asian,Other",Bachelor’s degree,10075,Female,Unsure
+18,popout,4092,52880,0.07738275340393344,197,15,0.07614213197969544,07/2026,89,No,Asian,Some high school or less,11204,Male,Unsure
+19,no_popout,5712,51608,0.11068051464889164,207,19,0.09178743961352658,07/2026,90,No,Other,"Some college, but no degree",10036,Male,Unsure
+20,no_popout,1652,36796,0.04489618436786607,207,11,0.05314009661835749,07/2026,80,No,White or Caucasian,"Some college, but no degree",10012,Female,"It will probably NOT be ""our guy"""
+21,no_popout,1932,53396,0.03618248557944415,173,8,0.046242774566473986,08/2026,95,No,White or Caucasian,"Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS etc.)",10804,Female,"It will absolutely be ""our guy"""
+22,popout,3244,33120,0.09794685990338164,152,13,0.08552631578947369,07/2026,79,Yes,American Indian/Native American or Alaska Native,Bachelor’s degree,11435,Female,Unsure
+23,popout,22944,54956,0.41749763447121335,134,37,0.27611940298507465,08/2026,93,No,White or Caucasian,"Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS etc.)",10016,Female,Unsure
+24,popout,3124,48704,0.06414257555847569,205,13,0.06341463414634146,07/2026,82,No,White or Caucasian,"Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS etc.)",10003,Female,Unsure
+25,no_popout,1840,47508,0.03873031910415088,212,9,0.04245283018867924,07/2026,87,No,Asian,High school diploma or GED,10472,Female,Unsure
+26,popout,3256,48616,0.0669738357742307,230,14,0.06086956521739131,06/2026,90,No,White or Caucasian,"Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS etc.)",07110,Female,Unsure
+27,no_popout,1743,53789,0.032404394950640465,193,8,0.04145077720207254,06/2026,95,No,Black or African American,"Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS etc.)",11233,Female,"It will absolutely be ""our guy"""
+28,no_popout,3344,48868,0.06842923794712286,253,16,0.06324110671936758,07/2026,94,No,Black or African American,Some high school or less,11203,Female,"It will probably NOT be ""our guy"""
+29,no_popout,2812,53568,0.05249402628434886,170,10,0.058823529411764705,08/2026,95,No,Asian,"Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS etc.)",10001,Male,"It will probably be ""our guy"""
+30,no_popout,6004,50696,0.11843143443269687,210,21,0.1,07/2026,89,No,White or Caucasian,"Some college, but no degree",10003,Male,Unsure
+31,popout,1920,41400,0.0463768115942029,191,9,0.04712041884816754,07/2026,81,No,Asian,Bachelor’s degree,08902,Male,Unsure
+32,popout,2376,48540,0.048949320148331275,225,10,0.044444444444444446,07/2026,92,No,Asian,Bachelor’s degree,11377,Female,Unsure
+33,no_popout,1704,41988,0.04058302372106316,170,9,0.052941176470588235,07/2026,78,No,Asian,Bachelor’s degree,08902,Male,"It will probably be ""our guy"""
+34,popout,1968,36364,0.05411945880541195,172,8,0.046511627906976744,07/2026,85,No,Asian,"Some college, but no degree",11423,Female,Unsure
+35,popout,3524,45604,0.07727392334005789,215,15,0.06976744186046512,07/2026,84,No,Asian,Associates or technical degree,10003,Female,"It will probably be ""our guy"""
+36,popout,2076,48272,0.04300629764666888,199,9,0.04522613065326633,07/2026,86,No,Asian,"Graduate or professional degree (MA, MS, MBA, PhD, JD, MD, DDS etc.)",07029,Male,"It will probably be ""our guy"""
+37,popout,2152,40608,0.052994483845547675,202,9,0.04455445544554455,07/2026,83,No,Asian,"Some college, but no degree",10452,Male,"It will probably be ""our guy"""
+38,popout,2464,27332,0.09015073906044198,117,8,0.06837606837606838,07/2026,73,No,White or Caucasian,Bachelor’s degree,10025,Female,Unsure
+39,popout,4064,31836,0.12765422791808015,180,16,0.08888888888888889,07/2026,79,No,Asian,"Some college, but no degree",11101,Female,"It will probably NOT be ""our guy"""
+40,no_popout,3968,48844,0.08123822782736877,259,20,0.07722007722007722,07/2026,82,No,Asian,"Some college, but no degree",10016,Female,"It will probably NOT be ""our guy"""

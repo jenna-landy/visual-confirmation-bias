@@ -1,0 +1,196 @@
+---
+title: "eye_tracking_analysis"
+output: html_document
+date: "2026-08-07"
+---
+```{r}
+library(tidyverse)
+library(janitor)
+library(broom)
+library(effectsize)
+library(ggplot2)
+library(pwr)
+library(performance)
+
+df <- read.csv("eye_tracking_cleaned.csv")
+
+df <- df %>%
+  mutate(
+    zip = str_pad(as.character(zip), width = 5, side = "left", pad = "0"),
+    zip = factor(zip)
+  )
+
+df <- df %>%
+  mutate(
+    pre_handwriting = recode(
+      pre_handwriting,
+      'It will absolutely NOT be "our guy"' = -2,
+      'It will probably NOT be "our guy"' = -1,
+      'Unsure' = 0,
+      'It will probably be "our guy"' = 1,
+      'It will absolutely be "our guy"' = 2
+    )
+  )
+
+df <- df %>%
+  mutate(
+    condition_num = if_else(condition == "popout", 1, 0)
+  )
+```
+
+```{r}
+primary_descriptives <- df %>%
+  group_by(condition) %>%
+  summarise(
+    n = n(),
+    mean = mean(proportion_fixation, na.rm = TRUE),
+    sd = sd(proportion_fixation, na.rm = TRUE),
+    se = sd / sqrt(n),
+    ci_lower = mean - qt(.975, df = n - 1) * se,
+    ci_upper = mean + qt(.975, df = n - 1) * se,
+    .groups = "drop"
+  )
+
+primary_descriptives
+
+popout_mean <- primary_descriptives %>%
+  filter(condition == "popout") %>%
+  pull(mean)
+
+no_popout_mean <- primary_descriptives %>%
+  filter(condition == "no_popout") %>%
+  pull(mean)
+
+raw_difference <- popout_mean - no_popout_mean
+
+percent_difference <- 100 * raw_difference / no_popout_mean
+
+cat("No-popout mean =", no_popout_mean, "\n")
+cat("Popout mean =", popout_mean, "\n")
+cat("Raw difference =", raw_difference, "\n")
+cat("Percent difference =", percent_difference, "%\n")
+```
+
+```{r}
+primary_model <- lm(
+  proportion_fixation ~ condition_num,
+  data = df
+)
+
+summary(primary_model)
+
+broom::tidy(
+  primary_model,
+  conf.int = TRUE
+)
+```
+
+```{r}
+library(effectsize)
+
+hedges_g(
+  proportion_fixation ~ condition,
+  data = df,
+  ci = .95
+)
+
+cohens_d(
+  proportion_fixation ~ condition,
+  data = df,
+  ci = .95
+)
+```
+
+```{r}
+library(pwr)
+
+pwr.t.test(
+  n = 20,
+  power = .80,
+  sig.level = .05,
+  type = "two.sample"
+)
+```
+
+```{r}
+sampling_model <- lm(
+  proportion_fixation ~ condition_num + gaze_samples,
+  data = df
+)
+
+summary(sampling_model)
+
+broom::tidy(
+  sampling_model,
+  conf.int = TRUE
+)
+```
+
+```{r}
+duration_model <- lm(
+  target_fixation_duration ~ condition_num,
+  data = df
+)
+
+summary(duration_model)
+
+broom::tidy(
+  duration_model,
+  conf.int = TRUE
+)
+```
+
+```{r}
+fixation_model <- lm(
+  n_target_fixations ~ condition_num,
+  data = df
+)
+
+summary(fixation_model)
+
+broom::tidy(
+  fixation_model,
+  conf.int = TRUE
+)
+```
+
+```{r}
+df %>%
+  group_by(condition) %>%
+  summarise(
+    mean_duration = mean(target_fixation_duration),
+    sd_duration = sd(target_fixation_duration),
+
+    mean_fixations = mean(n_target_fixations),
+    sd_fixations = sd(n_target_fixations)
+  )
+```
+
+```{r}
+library(gtsummary)
+
+tbl_summary(
+  df,
+  by = condition,
+  include = c(
+    gender,
+    race,
+    hispanic,
+    education,
+    pre_handwriting,
+    gaze_samples
+  ),
+  statistic = list(
+    all_continuous() ~ "{mean} ({sd})",
+    all_categorical() ~ "{n} ({p}%)"
+  ),
+  digits = all_continuous() ~ 1,
+  missing = "no"
+) %>%
+  add_n() %>%
+  bold_labels()
+
+mean()
+sd()
+n(df$gender)
+```
